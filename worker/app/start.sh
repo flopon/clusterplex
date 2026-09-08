@@ -185,9 +185,10 @@ do
     echo "Codec ${codec}.so already exists. Skipping"
   else
     echo "Codec ${codec}.so does not exist. Downloading..."
-    wget https://downloads.plex.tv/codecs/${CLUSTERPLEX_PLEX_CODECS_VERSION}/${CLUSTERPLEX_PLEX_CODEC_ARCH}/${codec}.so
+    wget -O "${codec}.so.tmp" https://downloads.plex.tv/codecs/${CLUSTERPLEX_PLEX_CODECS_VERSION}/${CLUSTERPLEX_PLEX_CODEC_ARCH}/${codec}.so && \
+    mv "${codec}.so.tmp" "${codec}.so" || exit 1
   fi
-done
+done < /app/codecs.txt
 
 export FFMPEG_EXTERNAL_LIBS="${CODEC_PATH}/"
 export PLEX_MEDIA_SERVER_INFO_MODEL="${INTERNAL_PLEX_MEDIA_SERVER_INFO_MODEL}"
