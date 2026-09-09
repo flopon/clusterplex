@@ -44,22 +44,24 @@ download_eae_and_license() {
     # download eae definition to eae.xml
     EAE_XML="https://plex.tv/api/codecs/easyaudioencoder?build=${codec_arch}&deviceId=${UUID}&oldestPreviousVersion=${plex_version}&version=${eae_version}"
     echo "Downloading EAE_XML => ${EAE_XML}"
-    curl -s -o eae.xml "${EAE_XML}"
+    curl -fsS -o eae.xml "${EAE_XML}" || return 1
 
     # extract codec url
     EAE_CODEC_URL=$(grep -Pio 'Codec url="\K[^"]*' eae.xml)
     echo "EAE_CODEC_URL => ${EAE_CODEC_URL}"
     echo "Downloading EasyAudioEncoder"
-    curl -s -o "EasyAudioEncoder-${eae_version}-${codec_arch}.zip" "${EAE_CODEC_URL}"
+    curl -fsS -o "EasyAudioEncoder-${eae_version}-${codec_arch}.zip" "${EAE_CODEC_URL}" || return 1
     echo "Decompressing EasyAudioEncoder"
-    unzip -o "EasyAudioEncoder-${eae_version}-${codec_arch}.zip" -d "EasyAudioEncoder"
+    unzip -tq "EasyAudioEncoder-${eae_version}-${codec_arch}.zip" >/dev/null || return 1
+    cleanup_old_eae "$codec_path" || return 1
+    unzip -o "EasyAudioEncoder-${eae_version}-${codec_arch}.zip" -d "EasyAudioEncoder" || return 1
     # extract license key
     echo "Extracting License Key"
     EAE_LICENSE_KEY=$(grep -Po 'license="\K([A-Za-z0-9]{10}\s[A-Za-z0-9]{60}\s[A-Za-z0-9]{64})' eae.xml)
     EAE_LICENSE_CONTENT="${EAE_LICENSE_KEY}"
     EAE_LICENSE_PATH="${codec_path}/EasyAudioEncoder/EasyAudioEncoder/eae-license.txt"
     echo "License Path output => ${EAE_LICENSE_PATH}"
-    echo $EAE_LICENSE_CONTENT > $EAE_LICENSE_PATH
+    echo "$EAE_LICENSE_CONTENT" > "$EAE_LICENSE_PATH" || return 1
     
     # Validate the new license
     echo "Validating new license..."
@@ -71,7 +73,7 @@ download_eae_and_license() {
     fi
     
     # save eae version to file
-    echo $eae_version > EAE_VERSION.txt
+    echo "$eae_version" > EAE_VERSION.txt || return 1
     echo "EAE_VERSION.txt saved"
 }
 
@@ -148,7 +150,8 @@ else
   need_download=false
   
   # Compare the eae_version_file contents with the variable
-  if [[ "$eae_version_file" == "$EAE_VERSION" ]]; then
+  if [[ "$eae_version_file" == "$EAE_VERSION" ]] && \
+     [[ -x "${CODEC_PATH}/EasyAudioEncoder/EasyAudioEncoder/EasyAudioEncoder" ]]; then
     echo "EAE version is up to date"
     
     # Check if existing license is expired
@@ -172,8 +175,7 @@ else
   
   # Download EAE if needed
   if [ "$need_download" = true ]; then
-    cleanup_old_eae "$CODEC_PATH"
-    download_eae_and_license "$EAE_VERSION" "$CLUSTERPLEX_PLEX_CODEC_ARCH" "$CLUSTERPLEX_PLEX_VERSION" "$CODEC_PATH"
+    download_eae_and_license "$EAE_VERSION" "$CLUSTERPLEX_PLEX_CODEC_ARCH" "$CLUSTERPLEX_PLEX_VERSION" "$CODEC_PATH" || exit 1
   fi
 fi
 
