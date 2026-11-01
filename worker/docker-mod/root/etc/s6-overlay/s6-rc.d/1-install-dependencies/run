@@ -1,17 +1,17 @@
 #!/usr/bin/with-contenv bash
 
-if which node > /dev/null
+if which node > /dev/null && which wget > /dev/null
 then
-    echo "**** node is installed, skipping... ****"
+    echo "**** dependencies are installed, skipping... ****"
 else
     echo "**** install runtime packages ****"
     echo "**** apt-get update ****"
-    apt-get update
-    echo "**** install binutils, libatomic1, file, unzip ****"
-    apt-get install -y binutils libatomic1 file unzip
+    apt-get update || exit 1
+    echo "**** install binutils, libatomic1, file, unzip, wget ****"
+    apt-get install -y binutils libatomic1 file unzip wget || exit 1
     echo "**** install 'n' ****"
-    curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o n
+    curl -fL https://raw.githubusercontent.com/tj/n/master/bin/n -o n || exit 1
     echo "**** install nodejs ****"
-    bash n lts
+    bash n lts || exit 1
 fi
 

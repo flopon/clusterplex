@@ -9,9 +9,9 @@ child_process_pid=$2
 # Function to check if the main script is running
 check_processes() {
     if ! kill -0 $main_script_pid 2>/dev/null; then
-        echo "Main process is no longer running"
+        echo "Main process is no longer running" >&2
         if kill -0 $child_process_pid 2>/dev/null; then
-            echo "Sending SIGTERM to the child process"
+            echo "Sending SIGTERM to the child process" >&2
             kill -15 $child_process_pid
         fi
         exit 0

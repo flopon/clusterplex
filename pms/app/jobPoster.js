@@ -7,7 +7,7 @@ module.exports = {
     var socket = require("socket.io-client")(orchestratorUrl);
 
     socket.on("connect", () => {
-      console.log("JobPoster connected, announcing");
+      console.error("JobPoster connected, announcing");
       socket.emit("jobposter.announce", {
         jobPosterId: uniqueId,
         host: process.env.HOSTNAME,
@@ -16,14 +16,14 @@ module.exports = {
 
     let workSent = false;
     socket.on("jobposter.produce", () => {
-      console.log("Orchestrator requesting pending work");
+      console.error("Orchestrator requesting pending work");
 
       if (workSent) {
-        console.log("Work already sent, nothing to do");
+        console.error("Work already sent, nothing to do");
         return;
       }
 
-      console.log(`Sending request to orchestrator on: ${orchestratorUrl}`);
+      console.error(`Sending request to orchestrator on: ${orchestratorUrl}`);
 
       socket.emit("jobposter.job.request", job);
 
