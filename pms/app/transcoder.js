@@ -58,6 +58,9 @@ if (TRANSCODE_OPERATING_MODE == "local") {
 } else if (process.cwd().indexOf("PlexCreditsDetection") > 0) {
 	console.log("PlexCreditsDetection so forcing local transcode");
 	transcodeLocally(process.cwd(), process.argv.slice(2), process.env);
+} else if (process.argv.slice(2).filter((s) => s.includes("loudnorm=")).length > 0) {
+	console.log("LoudnessAnalysis so forcing local transcode");
+	transcodeLocally(process.cwd(), process.argv.slice(2), process.env);
 } else {
 	function setValueOf(arr, key, newValue) {
 		let i = arr.indexOf(key);
